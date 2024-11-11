@@ -13,4 +13,5 @@ notebook
 tqdm
 joblib
 ensure
-mlflow
+# mlflow
+-e .
