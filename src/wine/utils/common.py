@@ -1,7 +1,7 @@
 import os
 from box.exceptions import BoxValueError
 import yaml
-from wine import logger
+from src.wine import logger
 import json
 import joblib
 from ensure import ensure_annotations
@@ -9,16 +9,21 @@ from box import ConfigBox
 from pathlib import Path
 from typing import Any
 
+
+
 @ensure_annotations
 def read_yaml(path_to_yaml: Path) -> ConfigBox:
-    """ reads yaml file and returns
+    """reads yaml file and returns
 
     Args:
         path_to_yaml (str): path like input
 
-    Returns:
+    Raises:
         ValueError: if yaml file is empty
         e: empty file
+
+    Returns:
+        ConfigBox: ConfigBox type
     """
     try:
         with open(path_to_yaml) as yaml_file:
@@ -26,89 +31,100 @@ def read_yaml(path_to_yaml: Path) -> ConfigBox:
             logger.info(f"yaml file: {path_to_yaml} loaded successfully")
             return ConfigBox(content)
     except BoxValueError:
-        raise ValueError(f"yaml file: {path_to_yaml} empty file")
+        raise ValueError("yaml file is empty")
     except Exception as e:
-        raise e    
+        raise e
+    
 
 
 @ensure_annotations
-def create_directories(path_to_directories: list, verbose=False):
+def create_directories(path_to_directories: list, verbose=True):
     """create list of directories
 
     Args:
         path_to_directories (list): list of path of directories
-        ignore_log (bool, optional): ignore if multiple directories is to be created. Defaults to False.
+        ignore_log (bool, optional): ignore if multiple dirs is to be created. Defaults to False.
     """
     for path in path_to_directories:
         os.makedirs(path, exist_ok=True)
         if verbose:
             logger.info(f"created directory at: {path}")
-            
+
+
 @ensure_annotations
 def save_json(path: Path, data: dict):
-    """ save json file
+    """save json data
 
     Args:
         path (Path): path to json file
-        data (dict): data to save in json file
-    """            
+        data (dict): data to be saved in json file
+    """
     with open(path, "w") as f:
         json.dump(data, f, indent=4)
-        
+
     logger.info(f"json file saved at: {path}")
-    
+
+
+
 
 @ensure_annotations
 def load_json(path: Path) -> ConfigBox:
-    """_summary_
+    """load json files data
 
     Args:
-        path (Path): _description_
+        path (Path): path to json file
 
     Returns:
-        ConfigBox: _description_
+        ConfigBox: data as class attributes instead of dict
     """
     with open(path) as f:
         content = json.load(f)
-        
-    logger.info(f"json file: {path} loaded successfully")
-    return ConfigBox(content)
-           
-@ensure_annotations
-def save_binary(file_path: Path, data: Any):
-    """_summary_
 
-    Args:            
-        file_path (Path): _description_
-        data (Any): _description_
-    """
-    joblib.dump(data, file_path)
-    logger.info(f"binary file saved at: {file_path}")     
-    
+    logger.info(f"json file loaded succesfully from: {path}")
+    return ConfigBox(content)
+
+
 @ensure_annotations
-def load_binary(file_path: Path) -> Any:
-    """_summary_
+def save_bin(data: Any, path: Path):
+    """save binary file
 
     Args:
-        file_path (Path): _description_
+        data (Any): data to be saved as binary
+        path (Path): path to binary file
+    """
+    joblib.dump(value=data, filename=path)
+    logger.info(f"binary file saved at: {path}")
+
+
+@ensure_annotations
+def load_bin(path: Path) -> Any:
+    """load binary data
+
+    Args:
+        path (Path): path to binary file
 
     Returns:
-        Any: _description_
+        Any: object stored in the file
     """
-    
-    data = joblib.load(file_path)
-    logger.info(f"binary file loaded from: {file_path}")
+    data = joblib.load(path)
+    logger.info(f"binary file loaded from: {path}")
     return data
+
+
 
 @ensure_annotations
 def get_size(path: Path) -> str:
-    """_summary_
+    """get size in KB
 
     Args:
-        path (Path): _description_
+        path (Path): path of the file
 
     Returns:
-        str: _description_
+        str: size in KB
     """
     size_in_kb = round(os.path.getsize(path)/1024)
     return f"~ {size_in_kb} KB"
+
+
+
+
